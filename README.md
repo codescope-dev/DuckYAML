@@ -1,6 +1,6 @@
 # DuckYAML
 
-Convert your Spring `.yml` configuration to `.properties` files and get rid of (SnakeYAML)[https://bitbucket.org/snakeyaml/snakeyaml].
+Convert your Spring `.yml` configuration to `.properties` files and get rid of [SnakeYAML](https://bitbucket.org/snakeyaml/snakeyaml).
 
 What the duck is this about?
 
