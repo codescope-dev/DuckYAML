@@ -1,26 +1,25 @@
 # DuckYAML
 
-Convert your `.yml` files to `.properties` file.
+Convert your Spring `.yml` configuration to `.properties` files and get rid of (SnakeYAML)[https://bitbucket.org/snakeyaml/snakeyaml].
 
 What the duck is this about?
 
-This is a python script that is designed to generate `.properties` files from an existing `.yml` file.
-
+This is a simple Python script that is designed to generate `.properties` files from an existing `.yml` file.
+- Since this process involves removing SnakeYAML, make sure your application does not directly use SnakeYAML.
 - It will generate separate files for each profile named `application-{profile}.properties`.
 - Shared properties are saved to `application.properties` file.
-- Since this process involves removing SnakeYAML, make sure your application does not directly use SnakeYAML.
+- This is tested for a single `application.yml` file with multiple profiles.
 
 ### Background
 
-Spring uses [SnakeYAML](https://bitbucket.org/snakeyaml/snakeyaml) to parse configuration stored in the `.yml` files.
+Spring uses [SnakeYAML](https://bitbucket.org/snakeyaml/snakeyaml) to parse configuration stored in the `.yml` file.
 However, SnakeYAML has a track record of having vulnerabilities since 2009 -- checkout it out
 on [mvnrepository](https://mvnrepository.com/artifact/org.yaml/snakeyaml)!
-Even with the recent versions, it has critical
-vulnerability [(CVE-1471)](https://bitbucket.org/snakeyaml/snakeyaml/issues/561/cve-2022-1471-vulnerability-in).
+Even the recent versions (>= 1.32) have critical vulnerability [(CVE-1471)](https://bitbucket.org/snakeyaml/snakeyaml/issues/561/cve-2022-1471-vulnerability-in). In an enterprise setting, you application could be marked as vulnerable because of this.
 
-However, Spring doesn't really need SnakeYAML if `.properties` files are used.
+Howeer, it doesn't have to be that way. Spring doesn't really need SnakeYAML if `.properties` files are used instead.
 This is where the library comes handy.
-It automatically creates `.properties` files based on an `application.yaml` file.
+It automatically creates `.properties` files based on your current `application.yaml` file.
 
 ### Steps to use
 
