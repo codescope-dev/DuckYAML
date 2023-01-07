@@ -13,11 +13,11 @@ This is a simple Python script that is designed to generate `.properties` files 
 ### Background
 
 Spring uses [SnakeYAML](https://bitbucket.org/snakeyaml/snakeyaml) to parse configuration stored in the `.yml` file.
-However, SnakeYAML has a track record of having vulnerabilities since 2009 -- checkout it out
+Despite being a mature library, SnakeYAML has a track record of having vulnerabilities since its inception on 2009 -- checkout it out
 on [mvnrepository](https://mvnrepository.com/artifact/org.yaml/snakeyaml)!
 Even the recent versions (>= 1.32) have critical vulnerability [(CVE-1471)](https://bitbucket.org/snakeyaml/snakeyaml/issues/561/cve-2022-1471-vulnerability-in). In an enterprise setting, you application could be marked as vulnerable because of this.
 
-Howeer, it doesn't have to be that way. Spring doesn't really need SnakeYAML if `.properties` files are used instead.
+However, it doesn't have to be that way. Spring doesn't really need SnakeYAML if `.properties` files are used instead.
 This is where the library comes handy.
 It automatically creates `.properties` files based on your current `application.yaml` file.
 
