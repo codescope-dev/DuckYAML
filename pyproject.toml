@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "yaml-to-props"
+name = "yaml-to-properties"
 version = "0.1.0"
 description = ""
 authors = ["Prashant Ghimire <pras.ghim@gmail.com>"]
