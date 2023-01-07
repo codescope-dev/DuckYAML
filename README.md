@@ -45,3 +45,19 @@ It automatically creates `.properties` files based on an `application.yaml` file
 2. Exclude snakeyaml using maven exclusion.
 3. Repeat step 1 and 2 until you don't see snakeyaml in the dependency tree.
 4. Run the application to ensure its functional.
+
+### Excluding snakeyaml Dependency
+
+```commandline
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter</artifactId>
+    <version>${spring-boot.version}</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
