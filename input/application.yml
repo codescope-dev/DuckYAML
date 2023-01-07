@@ -1,3 +1,10 @@
+name: test-YAML
+environment: base
+enabled: false
+servers:
+  - www.1.test.com
+  - www.2.test.com
+---
 spring:
   config:
     activate:

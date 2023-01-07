@@ -24,7 +24,11 @@ def main():
         for d in data:
             count += 1
             flattened_map = flatten(d)
-            new_file_name = f'application-{flattened_map["spring.config.activate.on-profile"]}.properties'
+            profile_prop_key = 'spring.config.activate.on-profile'
+            if profile_prop_key in flattened_map:
+                new_file_name = f'application-{flattened_map["spring.config.activate.on-profile"]}.properties'
+            else:
+                new_file_name = 'application.properties'
             with open(f'./output/{new_file_name}', 'w') as new_file:
                 for k, v in flattened_map.items():
                     new_file.write(f'{k}={v}\n')
