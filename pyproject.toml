@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "yaml-to-props"
+version = "0.1.0"
+description = ""
+authors = ["Prashant Ghimire <pras.ghim@gmail.com>"]
+readme = "README.md"
+packages = [{include = "yaml_to_props"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyyaml = "^6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
