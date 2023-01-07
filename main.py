@@ -1,6 +1,6 @@
+import shutil
 from collections.abc import MutableMapping
 
-import shutil
 import yaml
 
 PROFILE_DECLARATION_KEYS = ['spring.config.activate.on-profile', 'spring.profiles.active', 'spring.profiles']
