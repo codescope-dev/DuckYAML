@@ -91,36 +91,74 @@ def write_properties(path, documents):
 
 
 def convert(documents, source='input') -> dict:
-    """Convert parsed YAML documents into {file name: [properties, ...]}.
+    """Decide which .properties file each YAML document belongs in.
 
-    Each file gets one properties dict, except application.properties, which also gets a '#---' section for
-    every document that cannot be expressed as a profile-specific file.
+    ``documents`` are the parsed documents of one YAML file (the parts separated by ``---``). The result maps
+    each output file name to the list of documents to write into it. For example, this YAML::
+
+        name: base
+        ---
+        spring.config.activate.on-profile: prod
+        name: prod
+        ---
+        spring.config.activate.on-profile: prod & cloud
+        name: prod-cloud
+
+    is converted into::
+
+        {
+            'application.properties': [
+                {'name': 'base'},
+                {'spring.config.activate.on-profile': 'prod & cloud', 'name': 'prod-cloud'},
+            ],
+            'application-prod.properties': [{'name': 'prod'}],
+        }
+
+    Every file holds a single document, except application.properties: documents that no single file can
+    represent are appended to it and written as extra sections separated by '#---'.
     """
-    files = {}  # file name -> properties merged from every document that targets it
+    # file name -> properties, e.g. {'application-prod.properties': {'name': 'prod'}}
+    files = {}
+    # documents with a condition a file name can't express, e.g. on-profile 'prod & cloud'
     conditional_documents = []
     for index, document in enumerate(documents, start=1):
         if document is None:
             continue
         if not isinstance(document, dict):
             raise ValueError(f'YAML document {index} in {source} is not a map')
+        # {'server': {'port': 8080}} -> {'server.port': '8080'}
         props = normalize_map(document)
+        # take the profile declaration out of the properties:
+        # 'spring.config.activate.on-profile: dev, qa' -> profiles 'dev, qa', names ['dev', 'qa']
+        # no declaration -> profiles None, names [] (the document holds shared properties)
         profiles = pop_profiles(props)
         names = [p.strip() for p in profiles.split(',') if p.strip()] if profiles is not None else []
 
         if any(k.startswith(ACTIVATION_PREFIX) for k in props) \
                 or not all(SIMPLE_PROFILE_NAME.fullmatch(name) for name in names):
-            # profile expressions like 'prod & cloud' or other activation conditions have no
-            # profile-specific file equivalent, so keep the condition in a multi-document section
+            # The document only applies under a condition that no file name can express, such as a profile
+            # expression ('prod & cloud', '!prod') or 'spring.config.activate.on-cloud-platform: kubernetes'.
+            # Keep the condition as a property so Spring still evaluates it when it reads the '#---' section:
+            #   #---
+            #   spring.config.activate.on-profile=prod & cloud
+            #   name=prod-cloud
             if profiles is not None:
                 props = {ON_PROFILE_KEY: profiles, **props}
             conditional_documents.append(props)
         else:
-            # a list of profiles means "any of these", so the properties apply to each of them;
-            # later documents override earlier ones, as in Spring
+            # Plain profile names map to profile-specific files, and no profile maps to application.properties:
+            #   (none)       -> application.properties
+            #   'prod'       -> application-prod.properties
+            #   'dev, qa'    -> application-dev.properties and application-qa.properties, since a list means
+            #                   "active in any of these profiles"
+            # Several documents for the same file are merged, and later ones win as they do in Spring:
+            #   {'a': '1', 'b': '2'} then {'b': '3'} -> {'a': '1', 'b': '3'}
             for name in names or [None]:
                 file_name = f'application-{name}.properties' if name else SHARED_FILE_NAME
                 files.setdefault(file_name, {}).update(props)
 
+    # every file becomes a single document; application.properties also gets the conditional documents as
+    # '#---' sections after its own properties (starting with an empty one if no document was shared)
     output = {name: [props] for name, props in files.items()}
     if conditional_documents:
         output.setdefault(SHARED_FILE_NAME, [{}]).extend(conditional_documents)
