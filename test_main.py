@@ -18,6 +18,9 @@ class MainTest(unittest.TestCase):
         with open(self.input_file, 'w', encoding='utf-8') as file:
             file.write(textwrap.dedent(yml))
         main(self.input_file, self.output_dir)
+        return self.convert_output()
+
+    def convert_output(self):
         outputs = {}
         for name in sorted(os.listdir(self.output_dir)):
             with open(os.path.join(self.output_dir, name), encoding='utf-8') as file:
@@ -169,6 +172,12 @@ class MainTest(unittest.TestCase):
         with open(os.path.join(self.output_dir, 'application-old.properties'), 'w'):
             pass
         self.assertEqual(self.convert('a: 1\n'), {'application.properties': 'a=1\n'})
+
+    def test_invalid_input_keeps_previous_output(self):
+        previous = self.convert('a: 1\n')
+        with self.assertRaisesRegex(ValueError, 'document 2 .* is not a map'):
+            self.convert('a: 2\n---\n- not a map\n')
+        self.assertEqual(self.convert_output(), previous)
 
 
 if __name__ == '__main__':
