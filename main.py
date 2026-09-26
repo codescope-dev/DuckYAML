@@ -117,10 +117,7 @@ def convert(documents, source='input') -> dict:
     Every file holds a single document, except application.properties: documents that no single file can
     represent are appended to it and written as extra sections separated by '#---'.
     """
-    # file name -> properties, e.g. {'application-prod.properties': {'name': 'prod'}}
-    files = {}
-    # documents with a condition a file name can't express, e.g. on-profile 'prod & cloud'
-    conditional_documents = []
+    output = {}
     for index, document in enumerate(documents, start=1):
         if document is None:
             continue
@@ -132,7 +129,7 @@ def convert(documents, source='input') -> dict:
         # 'spring.config.activate.on-profile: dev, qa' -> profiles 'dev, qa', names ['dev', 'qa']
         # no declaration -> profiles None, names [] (the document holds shared properties)
         profiles = pop_profiles(props)
-        names = [p.strip() for p in profiles.split(',') if p.strip()] if profiles is not None else []
+        names = [p.strip() for p in (profiles or '').split(',') if p.strip()]
 
         if any(k.startswith(ACTIVATION_PREFIX) for k in props) \
                 or not all(SIMPLE_PROFILE_NAME.fullmatch(name) for name in names):
@@ -144,7 +141,8 @@ def convert(documents, source='input') -> dict:
             #   name=prod-cloud
             if profiles is not None:
                 props = {ON_PROFILE_KEY: profiles, **props}
-            conditional_documents.append(props)
+            # the first document of application.properties is kept for the shared properties
+            output.setdefault(SHARED_FILE_NAME, [{}]).append(props)
         else:
             # Plain profile names map to profile-specific files, and no profile maps to application.properties:
             #   (none)       -> application.properties
@@ -153,15 +151,8 @@ def convert(documents, source='input') -> dict:
             #                   "active in any of these profiles"
             # Several documents for the same file are merged, and later ones win as they do in Spring:
             #   {'a': '1', 'b': '2'} then {'b': '3'} -> {'a': '1', 'b': '3'}
-            for name in names or [None]:
-                file_name = f'application-{name}.properties' if name else SHARED_FILE_NAME
-                files.setdefault(file_name, {}).update(props)
-
-    # every file becomes a single document; application.properties also gets the conditional documents as
-    # '#---' sections after its own properties (starting with an empty one if no document was shared)
-    output = {name: [props] for name, props in files.items()}
-    if conditional_documents:
-        output.setdefault(SHARED_FILE_NAME, [{}]).extend(conditional_documents)
+            for file_name in [f'application-{name}.properties' for name in names] or [SHARED_FILE_NAME]:
+                output.setdefault(file_name, [{}])[0].update(props)
     return output
 
 
