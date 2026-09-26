@@ -9,6 +9,15 @@ This is a simple Python script that is designed to generate `.properties` files 
 - It will generate separate files for each profile named `application-{profile}.properties`.
 - Shared properties are saved to `application.properties` file.
 - This is tested for a single `application.yml` file with multiple profiles.
+- Documents are matched to profiles with `spring.config.activate.on-profile` (or the legacy `spring.profiles`).
+  `spring.profiles.active` only activates profiles, so it is kept as a regular property.
+- Documents for the same profile are merged, with later documents winning. A document for a list of profiles
+  (`on-profile: dev, qa`) is written to each profile's file.
+- Documents with a profile expression (`prod & cloud`) or `spring.config.activate.on-cloud-platform` are appended to
+  `application.properties` as `#---` sections, which requires Spring Boot 2.4+.
+- Lists of simple values are written comma separated (`servers=a.com,b.com`); other lists use indexed keys
+  (`servers[0].host=a.com`).
+- Values are escaped for the `.properties` format, and non-ASCII characters are written as `\uXXXX` escapes.
 
 ### Background
 
@@ -33,6 +42,8 @@ It automatically creates `.properties` files based on your current `application.
 6. Check `output` directory to see your `.properties` files.
 7. Copy the properties files to your applications `src/main/resources` directory.
 8. Follow the SnakeYAML Removal Process below.
+
+Run the tests with `python3 -m unittest`.
 
 ### Folders after script run
 
